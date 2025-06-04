@@ -5,11 +5,14 @@ import { Usuario } from './entities/usuario.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
+import { JwtPayload } from './interfaces/jwt-payload.interfaces';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(Usuario.name) private readonly userModel: Model<Usuario>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -34,9 +37,12 @@ export class AuthService {
 
       await usuario.save();
 
+      const token = this.getJwtToken({ email });
+
       return {
         ok: true,
         usuario,
+        token,
       };
     } catch (error) {
       console.log(error);
@@ -68,10 +74,12 @@ export class AuthService {
           msg: 'Password incorrecto',
         };
       }
+      const token = this.getJwtToken({ email });
 
       return {
         ok: true,
         usuario: usuarioDb,
+        token,
       };
     } catch (error) {
       console.log(error);
@@ -80,5 +88,10 @@ export class AuthService {
         msg: 'Error al iniciar sesion',
       };
     }
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 }
