@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Usuario } from './entities/usuario.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -42,6 +43,41 @@ export class AuthService {
       return {
         ok: false,
         msg: 'Error al crear el usuario',
+      };
+    }
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto;
+
+    try {
+      const usuarioDb = await this.userModel.findOne({ email });
+
+      if (!usuarioDb) {
+        return {
+          ok: false,
+          msg: 'El usuario no existe',
+        };
+      }
+
+      const validPassword = bcrypt.compareSync(password, usuarioDb.password);
+
+      if (!validPassword) {
+        return {
+          ok: false,
+          msg: 'Password incorrecto',
+        };
+      }
+
+      return {
+        ok: true,
+        usuario: usuarioDb,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        msg: 'Error al iniciar sesion',
       };
     }
   }
