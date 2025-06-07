@@ -37,7 +37,7 @@ export class AuthService {
 
       await usuario.save();
 
-      const token = this.getJwtToken({ email });
+      const token = this.getJwtToken({ email, _id: usuario._id as string });
 
       return {
         ok: true,
@@ -74,7 +74,7 @@ export class AuthService {
           msg: 'Password incorrecto',
         };
       }
-      const token = this.getJwtToken({ email });
+      const token = this.getJwtToken({ email, _id: usuarioDb._id as string });
 
       return {
         ok: true,
@@ -93,5 +93,16 @@ export class AuthService {
   private getJwtToken(payload: JwtPayload) {
     const token = this.jwtService.sign(payload);
     return token;
+  }
+
+  validarJwtToken(token: string) {
+    try {
+      const payload: { _id: string } = this.jwtService.verify(token);
+      const { _id } = payload;
+      return [true, _id];
+    } catch (error) {
+      console.log(error);
+      return [false, null];
+    }
   }
 }

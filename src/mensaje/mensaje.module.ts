@@ -10,5 +10,6 @@ import { Mensaje, MensajeSchema } from './entities/mensaje.entity';
   imports: [
     MongooseModule.forFeature([{ name: Mensaje.name, schema: MensajeSchema }]),
   ],
+  exports: [MongooseModule],
 })
 export class MensajeModule {}
